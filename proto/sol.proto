@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+// pip3 install grpcio-tools
+// python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./sol.proto
+
+package iotex;
+
+message Request {string bytecode = 1;}
+message Response { string content = 1; }
+
+service SolDecompiler {
+  rpc Decompile(Request) returns (Response) {};
+}
