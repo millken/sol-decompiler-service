@@ -129,27 +129,6 @@ def make_abi(hash_targets):
     hash_name = str(list(hash_targets.keys())).encode('utf-8')
     hash_name = hashlib.sha256(hash_name).hexdigest()
 
-    
-    dir_name = 'cache_pabi/'+hash_name[:3]+'/' #:3, because there's not '0x' at the beginning
-
-    if not os.path.isdir('cache_pabi'):
-        os.mkdir('cache_pabi')
-
-    if not os.path.isdir(dir_name):
-        os.mkdir(dir_name)
-
-    cache_fname = dir_name+hash_name+".pabi"
-
-
-    if os.path.isfile(cache_fname):
-        with open(cache_fname) as f:
-            _abi = json.loads(f.read())
-
-        return _abi
-
-    if '--silent' not in sys.argv:
-        print("cache for PABI not found, generating...")
-
     hashes = list(hash_targets.keys())
 
     result = {}
@@ -187,9 +166,6 @@ def make_abi(hash_targets):
         result[h] = res
 
     _abi = result
-
-    with open(cache_fname, 'w+') as f:
-        f.write(json.dumps(result, indent = 2))
 
     return result
 

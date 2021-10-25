@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.vscode
 build/
 develop-eggs/
 dist/
@@ -32,6 +33,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+*.db
 
 # Installer logs
 pip-log.txt

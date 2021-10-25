@@ -1,40 +1,28 @@
 from concurrent import futures
 import logging
 import io
+import traceback
 from contextlib import redirect_stdout
 
-import timeout_decorator
 import sol_pb2,sol_pb2_grpc
 import grpc
 from grpc_reflection.v1alpha import reflection
-from panoramix.loader import Loader
-from panoramix.vm import VM
-from panoramix.contract import Contract
-from panoramix.function import Function
-from panoramix.prettify import  pretty_type
-from panoramix.whiles import make_whiles
+
+from pano.contract import Contract
+from pano.function import Function
+from pano.loader import Loader
+from pano.prettify import  pretty_type
+from pano.vm import VM
+from pano.whiles import make_whiles
+from utils.helpers import C,convert
 
 logging.getLogger("panoramix.matcher").setLevel(logging.INFO)
 _HOST = 'localhost'
 _PORT = '5991'
 
-# Derives from BaseException so it bypasses all the "except Exception" that are
-# all around Panoramix code.
-class TimeoutInterrupt(BaseException):
-    """Thrown when a timeout occurs in the `timeout` context manager."""
-
-    def __init__(self, value="Timed Out"):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
 def decompile(bytecode):
-    """Returns decompile content or None."""
     loader = Loader()
-    loader.load_binary(bytecode)  # Code is actually hex.
-    logging.info("Running light execution to find functions.")
-
+    loader.load_binary(bytecode)
     loader.run(VM(loader, just_fdests=True))
     if len(loader.lines) == 0:
         # No code.
@@ -49,28 +37,23 @@ def decompile(bytecode):
             fname contains function name
             target contains line# for the given function
         """
-        logging.debug("target : "+ str(target) + "-" + loader.lines[target][1])
+        logging.info(f"Parsing %s...", fname)
+        logging.debug("stack %s", stack)
         try:
             if target > 1 and loader.lines[target][1] == "jumpdest":
                 target += 1
 
-            @timeout_decorator(60 * 3, timeout_exception=TimeoutInterrupt, use_signals=False)
             def dec():
-                trace = VM(loader).run(target, stack=stack, timeout=60)
-                logging.info("Initial decompiled trace")
-
+                trace = VM(loader).run(target, stack=stack)
                 trace = make_whiles(trace)
                 return trace
-            logging.info("xx")
             trace = dec()
 
             functions[hash] = Function(hash, trace)
 
-        except (Exception, TimeoutInterrupt):
+        except Exception as e:
             problems[hash] = fname
-
-    logging.info("Functions decompilation finished, now doing post-processing.")
-
+            logging.error(f"Problem with %s%s\n%s", fname, C.end, traceback.format_exc())
 
     contract = Contract(problems=problems, functions=functions,)
 
@@ -101,7 +84,6 @@ def decompile(bytecode):
 
         shown_already = set()
 
-        logging.info("len(contract.stor_defs) = "+ str(len(functions.items())) +"a"+ str(len(contract.consts)))
         for func in contract.consts:
             logging.debug("hash: " + func.hash)
             shown_already.add(func.hash)
@@ -152,13 +134,9 @@ def decompile(bytecode):
 
                 print()
 
-    """
-        Wrap up
-    """
-
     text = text_output.getvalue()
     text_output.close()
-    return text
+    return convert(text)
 
 class SolDecompilerServicer(sol_pb2_grpc.SolDecompilerServicer):
     """Provides methods that implement functionality of decompiler server."""
@@ -187,7 +165,7 @@ def serve():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
     format="%(asctime)s %(filename)s %(levelname)s %(message)s",
     datefmt='%a %d %b %Y %H:%M:%S')
     serve()
