@@ -17,7 +17,7 @@ from pano.whiles import make_whiles
 from utils.helpers import C,convert
 
 logging.getLogger("panoramix.matcher").setLevel(logging.INFO)
-_HOST = 'localhost'
+_HOST = '0.0.0.0'
 _PORT = '5991'
 
 def decompile(bytecode):
