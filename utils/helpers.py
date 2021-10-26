@@ -8,17 +8,17 @@ import os
 import re
 
 
-COLOR_HEADER = '\033[95m'
-COLOR_BLUE = '\033[94m'
-COLOR_OKGREEN = '\033[92m'
-COLOR_WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[;1m'
-COLOR_BOLD = '\033[1m'
-COLOR_UNDERLINE = '\033[4m'
-COLOR_GREEN = '\033[32m'
-COLOR_GRAY = '\033[38;5;8m'
-COLOR_ASM = '\033[38;5;33m'
+COLOR_HEADER = ''
+COLOR_BLUE = ''
+COLOR_OKGREEN = ''
+COLOR_WARNING = ''
+FAIL = ''
+ENDC = ''
+COLOR_BOLD = ''
+COLOR_UNDERLINE = ''
+COLOR_GREEN = ''
+COLOR_GRAY = ''
+COLOR_ASM = ''
 
 '''
     slowly refactoring into low-caps names,
@@ -85,12 +85,6 @@ class C():
     every = set([header, blue, okgreen, warning, red, bold, underline, green, gray, endc])
 
 def color(exp, color, add_color=True):
-    if add_color:
-        if exp == "":
-            return ''
-
-        return color + exp + C.endc
-    else:
         return str(exp)
 
 colorize = color # alias, refactoring this into `col` slowly, but such a short name = conflicts?

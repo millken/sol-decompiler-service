@@ -136,7 +136,7 @@ def decompile(bytecode):
 
     text = text_output.getvalue()
     text_output.close()
-    return convert(text)
+    return text
 
 class SolDecompilerServicer(sol_pb2_grpc.SolDecompilerServicer):
     """Provides methods that implement functionality of decompiler server."""
