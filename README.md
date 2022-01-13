@@ -1,6 +1,6 @@
 # sol-decompiler-service
 ```
-pip3 -r requirements.txt
+pip3 install -r requirements.txt
 pip3 install grpcio-tools #option
 
 
